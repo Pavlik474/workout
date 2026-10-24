@@ -4,6 +4,7 @@
 <meta name="color-scheme" content="dark">
 <title>Тренировки</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="content.js"></script>
 <style>
 :root{--bg:#0a0a0a;--card:#1a1a1a;--card2:#242424;--tx:#fff;--mut:#8a8f98;--g:#22c55e;--gd:#14391f;box-sizing:border-box;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
 html,body{margin:0;background:var(--bg);color:var(--tx);font:17px -apple-system,system-ui,sans-serif}
@@ -41,6 +42,11 @@ textarea{width:100%;background:var(--card);color:var(--tx);border:0;border-radiu
 .timer .p{width:40px;height:40px;padding:0;background:none;color:var(--mut);font-size:26px}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px;justify-content:center}.chips button{padding:8px 12px;font-size:15px;border-radius:18px}
 .empty{color:var(--mut);padding:20px 6px}
+.th{width:56px;height:56px;border-radius:12px;object-fit:cover;background:#fff;flex:none}
+.kcard{width:100%;text-align:left;display:flex;align-items:center;gap:16px;padding:22px 20px;margin-bottom:12px;border-radius:20px;background:linear-gradient(135deg,#14391f,#1a1a1a)}
+.kcard span{font-size:34px}.kcard b{display:block;font-size:22px}.kcard small{color:var(--mut);font-size:15px}
+.bg{background:var(--gd);color:var(--g);border-radius:14px;padding:4px 12px;font-size:14px;white-space:nowrap}
+.ar{line-height:1.55;margin:0 4px 14px}
 .sub{color:var(--mut);margin:4px 6px 12px;font-size:15px}
 #bar{position:fixed;left:0;right:0;bottom:0;background:#0d0d0d;border-top:1px solid #1f1f1f;display:flex;justify-content:space-around;align-items:center;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0));z-index:5}
 #bar button{background:none;border-radius:12px;padding:4px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--mut);min-width:62px}
@@ -94,7 +100,7 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",
 function vurl(e){return e.v||"https://www.youtube.com/results?search_query="+encodeURIComponent(e.n+" техника")}
 function render(){
  const A=document.getElementById("app");let h="";
- if(S.v==="home"){h=homeView()}else if(S.v==="prof"){h=profView()}else if(S.v==="lib"){h=libView()}else if(S.v==="lx"){h=lxView()}else if(S.v==="cal"){h=calView()}else if(S.v==="plan"){
+ if(S.v==="home"){h=homeView()}else if(S.v==="prof"){h=profView()}else if(S.v==="lib"){h=libView()}else if(S.v==="kc"){h=catView()}else if(S.v==="ka"){h=artView()}else if(S.v==="kx"){h=exView()}else if(S.v==="lx"){h=lxView()}else if(S.v==="cal"){h=calView()}else if(S.v==="plan"){
   h+=`<div class="sub">Full Body · ${PROFILES[S.p]} · ${LEVELS[S.l]}</div>`;
   h+='<div class="tabs">'+DAYS.map((_,i)=>`<button class="${i==S.d?"on":""}" data-d="${i}">ДЕНЬ ${i+1}</button>`).join("")+"</div>";
   const D=DAYS[S.d];
@@ -102,12 +108,12 @@ function render(){
   h+=`<div style="display:flex;justify-content:space-between;align-items:center"><h3>ТРЕНИРОВКА</h3><div class="seg"><button class="${DB._wk!=="h"?"on":""}" data-wk="l">ЛЁГКАЯ</button><button class="${DB._wk==="h"?"on":""}" data-wk="h">ТЯЖЁЛАЯ</button></div></div>`;
   if(!D.ex.length)h+='<div class="empty">Пока пусто — упражнения этого дня ещё не добавлены.</div>';
   D.ex.forEach((e,i)=>{const c=doneCount(S.d,i);
-   h+=`<button class="item" data-o="${i}"><span class="num ${c>=e.s?"ok":""}">${c>=e.s?"✓":i+1}</span><div><b>${esc(cur(S.d,i)[0])}</b><small>${e.t?e.r:e.s+" x "+e.r+" повторений"}${e.o.length>1?" · есть выбор":""}</small></div></button>`});
+   h+=`<button class="item" data-o="${i}"><span class="num ${c>=e.s?"ok":""}">${c>=e.s?"✓":i+1}</span>${th(cur(S.d,i)[0],1)}<div><b>${esc(cur(S.d,i)[0])}</b><small>${e.t?e.r:e.s+" x "+e.r+" повторений"}${e.o.length>1?" · есть выбор":""}</small></div></button>`});
  }else{
   const D=DAYS[S.d],e=D.ex[S.i],s=sess(S.d,S.i),l=last(S.d,S.i),c=cur(S.d,S.i);
   h+=`<div class="nav"><button data-n="-1">‹</button><span>${S.i+1} из ${D.ex.length}</span><button data-n="1">›</button><button data-x style="color:var(--mut)">✕</button></div>`;
-  h+=`<h2>${esc(c[0])}</h2>`;if(e.o.length>1)h+='<div class="chips">'+e.o.map((x,k)=>`<button class="${x===c?"on":""}" data-c="${k}">${esc(x[0])}</button>`).join("")+"</div>";
-  {h+=`<button class="vid" data-vid>ВИДЕО</button>`;if(S.vid){const id=VID[c[0]];if(id)h+=`<video controls playsinline preload="metadata" src="videos/${id}.mp4" style="width:100%;border-radius:14px;margin-bottom:10px;background:#000" onerror="this.outerHTML='<div class=empty>Видео не найдено: videos/${id}.mp4</div>'"></video>`;else h+='<div class="empty">Для этого упражнения видео не назначено.</div>';if(c[1])h+=`<a class="vid" style="font-size:14px;color:var(--mut)" href="${esc(c[1])}" target="_blank" rel="noopener">Открыть в Rutube</a>`}}
+  h+=bigImg(c[0])+`<h2>${esc(c[0])}</h2>`;if(e.o.length>1)h+='<div class="chips">'+e.o.map((x,k)=>`<button class="${x===c?"on":""}" data-c="${k}">${esc(x[0])}</button>`).join("")+"</div>";
+  {h+=`<button class="vid" data-vid>ВИДЕО</button>`;if(S.vid){const id=VID[c[0]];if(id)h+=`<video controls playsinline preload="metadata" poster="img/${id}.jpg" src="videos/${id}.mp4" style="width:100%;border-radius:14px;margin-bottom:10px;background:#000" onerror="this.outerHTML='<div class=empty>Видео не найдено: videos/${id}.mp4</div>'"></video>`;else h+='<div class="empty">Для этого упражнения видео не назначено.</div>';if(c[1])h+=`<a class="vid" style="font-size:14px;color:var(--mut)" href="${esc(c[1])}" target="_blank" rel="noopener">Открыть в Rutube</a>`}}
   if(e.t){const x=s.sets[0];h+=`<button class="item" data-k="0" style="justify-content:center;${x.ok?"background:var(--g);color:#000":""}">${x.ok?"✓ Выполнено":"Отметить выполненным"}</button>`}else s.sets.forEach((x,j)=>{const ph=l&&l.sets[j]&&l.sets[j].w?l.sets[j].w:"Вес кг";
    h+=`<div class="set ${x.ok?"done":""}"><input inputmode="decimal" placeholder="${esc(ph)}" value="${esc(x.w)}" data-w="${j}"><i></i><input inputmode="numeric" placeholder="${e.r} раз" value="${esc(x.r)}" data-r="${j}"><button data-k="${j}">${x.ok?"✓":"+"}</button></div>`});
   h+=`<div class="row2"><button data-note>+ Заметка</button>${e.t?"":"<button data-add>+ Ещё подход</button>"}</div>`;
@@ -120,7 +126,7 @@ const MON=["Январь","Февраль","Март","Апрель","Май","�
 const LN=Object.keys(VID);
 const NAVS=[["home","🏠","Главная"],["cal","📅","Дневник"],["plan","","Тренировка"],["lib","🎓","Знания"],["prof","👤","Профиль"]];
 const DUMB='<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 7v10M3 9v6M18 7v10M21 9v6M6 12h12"/></svg>';
-function navR(){const act=S.v==="ex"?"plan":S.v==="lx"?"lib":S.v;
+function navR(){const act=S.v==="ex"?"plan":["lx","kc","ka","kx"].includes(S.v)?"lib":S.v;
  document.getElementById("bar").innerHTML=NAVS.map(([t,i,n])=>t==="plan"?`<button class="c ${act===t?"on":""}" data-tab="plan" aria-label="Тренировка">${DUMB}</button>`:`<button class="${act===t?"on":""}" data-tab="${t}"><i>${i}</i>${n}</button>`).join("");
  document.querySelector(".timer").style.display=(S.v==="plan"||S.v==="ex")?"":"none"}
 function homeView(){const dd=dayData(),ds=Object.keys(dd).sort(),n=new Date(),ws=ymd(new Date(n.getFullYear(),n.getMonth(),n.getDate()-((n.getDay()+6)%7)));
@@ -130,8 +136,17 @@ function homeView(){const dd=dayData(),ds=Object.keys(dd).sort(),n=new Date(),ws
 function bkView(){let h="";h+=`<h3>РЕЗЕРВНАЯ КОПИЯ</h3><div class="row2" style="margin:0 0 8px"><button data-bk="out">Показать копию</button><button data-bk="in">Восстановить</button></div><textarea id="bk" rows="3" placeholder="Чтобы восстановить, вставьте сюда сохранённый текст">${esc(S.bk||"")}</textarea>`+(S.msg?`<div class="empty">${esc(S.msg)}</div>`:"");return h}
 function profView(){return '<h3>ПРОГРАММА</h3>'+profBar(1)+'<h3>ТИП НЕДЕЛИ</h3><div class="top"><button class="'+(DB._wk!=="h"?"on":"")+'" data-wk="l">Лёгкая</button><button class="'+(DB._wk==="h"?"on":"")+'" data-wk="h">Тяжёлая</button></div>'+bkView()}
 function histHtml(n,all){const a=(DB[n]||[]).filter(x=>all||x.d!==today()).sort((p,q)=>p.d<q.d?1:-1);return a.length?a.map(x=>{const st=x.sets.filter(y=>y.ok||y.w||y.r);return `<div class="hist"><div class="hh"><b>${fd(x.d)}</b>${x.wk?`<span class="tg ${x.wk}">${x.wk==="h"?"тяжёлая":"лёгкая"}</span>`:""}<span>${st.length} подх.</span></div>${st.map(y=>y.w||y.r?(y.w||"?")+" кг × "+(y.r||"?"):"выполнено").join(" · ")}${x.note?`<div>${esc(x.note)}</div>`:""}</div>`}).join(""):'<div class="empty">Пока нет записей.</div>'}
-function libView(){let h="<h3>БАЗА УПРАЖНЕНИЙ</h3>";LN.forEach((n,k)=>{const c=(DB[n]||[]).filter(s=>s.sets.some(x=>x.ok)).length;h+=`<button class="item" data-lx="${k}" style="justify-content:space-between"><div><b>${esc(n)}</b>${c?`<small>выполнено раз: ${c}</small>`:""}</div><span>›</span></button>`});return h}
-function lxView(){const n=LN[S.lx],id=VID[n];return `<div class="nav"><button data-tab="lib">‹</button><span>Знания</span><span style="width:46px"></span></div><h2>${esc(n)}</h2><video controls playsinline preload="metadata" src="videos/${id}.mp4" style="width:100%;border-radius:14px;margin-bottom:10px;background:#000" onerror="this.outerHTML='<div class=empty>Видео не найдено: videos/${id}.mp4</div>'"></video><h3>ИСТОРИЯ ВЫПОЛНЕНИЙ</h3>`+histHtml(n,1)}
+const KN=typeof KNOW!=="undefined"?KNOW:{},BD=typeof BODY!=="undefined"?BODY:{};
+function th(n,hide){const id=VID[n];return id?`<img class="th" alt="" src="img/${id}.jpg" style="display:none" onload="this.style.display='';${hide?"this.previousElementSibling.style.display='none';":""}" onerror="this.remove()">`:""}
+function bigImg(n){const id=VID[n];return id?`<img alt="" src="img/${id}.jpg" style="display:none;width:200px;height:200px;object-fit:cover;border-radius:18px;margin:0 auto 12px;background:#fff" onload="this.style.display='block'" onerror="this.remove()">`:""}
+function libView(){const ic={tr:"🏋️",food:"🥗",diet:"🍽️",rec:"🥘"};let h="<h3>БАЗА ЗНАНИЙ</h3>";for(const k in KN){const n=KN[k].s.reduce((a,x)=>a+x.i.length,0);h+=`<button class="kcard" data-kc="${k}"><span>${ic[k]||"📄"}</span><div><b>${esc(KN[k].t)}</b><small>${n?n+" статей":"скоро"}</small></div></button>`}return h}
+function catView(){const K=KN[S.kc];let h=`<div class="nav"><button data-tab="lib">‹</button><span>${esc(K.t)}</span><span style="width:46px"></span></div>`;
+ K.s.forEach((s,si)=>{h+=`<h3>${esc(s.h)}</h3>`+s.i.map((a,ii)=>`<button class="item" data-ka="${si}_${ii}" style="justify-content:space-between"><b style="flex:1">${a[2]?"🆕 ":""}${esc(a[0])}</b>${a[1]?`<span class="bg">${esc(a[1])}</span>`:""}<span>›</span></button>`).join("")});
+ if(S.kc==="tr")h+='<h3>УПРАЖНЕНИЯ</h3><button class="item" data-tab="kx" style="justify-content:space-between"><b style="flex:1">База упражнений: видео и история</b><span>›</span></button>';
+ if(!K.s.length)h+='<div class="empty">Раздел пока пуст.</div>';return h}
+function artView(){const q=S.ka.split("_"),K=KN[S.kc],a=K.s[+q[0]].i[+q[1]],b=BD[a[0]];return `<div class="nav"><button data-kc="${S.kc}">‹</button><span>${esc(K.t)}</span><span style="width:46px"></span></div><h2 style="text-align:left">${esc(a[0])}</h2>`+(b?b.split("\n\n").map(p=>`<p class="ar">${esc(p)}</p>`).join(""):'<div class="empty">Текст этой статьи пока не добавлен.</div>')}
+function exView(){let h='<div class="nav"><button data-kc="tr">‹</button><span>Упражнения</span><span style="width:46px"></span></div>';LN.forEach((n,k)=>{const c=(DB[n]||[]).filter(s=>s.sets.some(x=>x.ok)).length;h+=`<button class="item" data-lx="${k}" style="justify-content:space-between">${th(n)}<div style="flex:1"><b>${esc(n)}</b>${c?`<small>выполнено раз: ${c}</small>`:""}</div><span>›</span></button>`});return h}
+function lxView(){const n=LN[S.lx],id=VID[n];return `<div class="nav"><button data-tab="kx">‹</button><span>Упражнения</span><span style="width:46px"></span></div><h2>${esc(n)}</h2><video controls playsinline preload="metadata" poster="img/${id}.jpg" src="videos/${id}.mp4" style="width:100%;border-radius:14px;margin-bottom:10px;background:#000" onerror="this.outerHTML='<div class=empty>Видео не найдено: videos/${id}.mp4</div>'"></video><h3>ИСТОРИЯ ВЫПОЛНЕНИЙ</h3>`+histHtml(n,1)}
 function profBar(lv){const b=(a,k,c)=>'<div class="top">'+a.map((n,i)=>`<button class="${i==S[k]?"on":""}" data-${c}="${i}">${n}</button>`).join("")+"</div>";return b(PROFILES,"p","p")+(lv?b(LEVELS,"l","l"):"")}
 function viewBar(){return '<div class="top">'+[["plan","Тренировка"],["cal","Календарь"]].map(([v,n])=>`<button class="${v===S.v?"on":""}" data-v="${v}">${n}</button>`).join("")+"</div>"}
 const fd=d=>d.split("-").reverse().join(".");
@@ -153,7 +168,7 @@ function calView(){
  
  return h}
 document.addEventListener("click",ev=>{
- const t=ev.target.closest("[data-p],[data-d],[data-o],[data-n],[data-c],[data-vid],[data-x],[data-v],[data-m],[data-s],[data-bk],[data-l],[data-wk],[data-tab],[data-pr],[data-lx],[data-k],[data-add],[data-note],[data-h]");if(!t)return;
+ const t=ev.target.closest("[data-p],[data-d],[data-o],[data-n],[data-c],[data-vid],[data-x],[data-v],[data-m],[data-s],[data-bk],[data-l],[data-wk],[data-tab],[data-pr],[data-lx],[data-kc],[data-ka],[data-k],[data-add],[data-note],[data-h]");if(!t)return;
  const D=t.dataset;
  if(D.p!==undefined){S.p=+D.p;prog();ui()}
  else if(D.l!==undefined){S.l=+D.l;prog();ui()}
@@ -166,6 +181,8 @@ document.addEventListener("click",ev=>{
  else if(D.tab!==undefined){S.v=D.tab;S.msg="";window.scrollTo(0,0)}
  else if(D.pr!==undefined){const q=D.pr.split("_");S.p=+q[0];S.l=+q[1];prog();ui();S.v="plan"}
  else if(D.lx!==undefined){S.lx=+D.lx;S.v="lx";window.scrollTo(0,0)}
+ else if(D.kc!==undefined){S.kc=D.kc;S.v="kc";window.scrollTo(0,0)}
+ else if(D.ka!==undefined){S.ka=D.ka;S.v="ka";window.scrollTo(0,0)}
  else if(D.wk!==undefined){DB._wk=D.wk;for(const k in DB){if(k[0]==="_")continue;for(const s of DB[k])if(s.d===today())s.wk=D.wk}save()}
  else if(D.v!==undefined){S.v=D.v;S.msg=""}
  else if(D.m!==undefined){let [y,m]=S.m;m+=+D.m;if(m<0){m=11;y--}if(m>11){m=0;y++}S.m=[y,m]}
